@@ -1,17 +1,26 @@
+data "aws_availability_zones" "available" {
+	state	= "available"
+}
+
 resource "aws_vpc" "main"{
-	cidr_block = "10.0.0.0/16"
-	
+	cidr_block		= "10.0.0.0/16"
+
+	enable_dns_hostnames	= true
+	enable_dns_support	= true
+
 	tags = {
 		Name = "ci_cd"
 	}
 }
 
 resource "aws_subnet" "jenkins_subnet" {
-	vpc_id = aws_vpc.main.id
-	cidr_block = "10.0.1.0/24"
+	vpc_id			= aws_vpc.main.id
+	cidr_block		= "10.0.1.0/24"
 	
-	availability_zone = "ap-northeast-2a"
-	
+	availability_zone	= "ap-northeast-2a"
+
+	map_public_ip_on_launch	= true
+
 	tags = {
 		Name = "jenkins_server"
 	}
@@ -22,6 +31,8 @@ resource "aws_subnet" "web_subnet" {
 	cidr_block = "10.0.2.0/24"
 
 	availability_zone = "ap-northeast-2c"
+
+	map_public_ip_on_launch	= true
 
 	tags = {
 		Name = "web_server"
@@ -50,15 +61,13 @@ resource "aws_route_table" "new_public_rtb" {
 }
 
 resource "aws_route_table_association" "jenkins_subnet_association" {
-	subnet_id = aws_subnet.jenkins_subnet.id
-	
-	route_table_id = aws_route_table.new_public_rtb.id
+	subnet_id 	= aws_subnet.jenkins_subnet.id
+	route_table_id	= aws_route_table.new_public_rtb.id
 }
 
 resource "aws_route_table_association" "web_subnet_association" {
-	subnet_id = aws_subnet.web_subnet.id
-
-	route_table_id = aws_route_table.new_public_rtb.id
+	subnet_id	= aws_subnet.web_subnet.id
+	route_table_id	= aws_route_table.new_public_rtb.id
 }
 
 resource "aws_instance" "jenkins" {
