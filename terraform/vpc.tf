@@ -87,7 +87,7 @@ resource "aws_instance" "web_server" {
 	instance_type 		= "t2.micro"
 	subnet_id		= aws_subnet.web_subnet.id
 	vpc_security_group_ids	= [aws_security_group.my_sg.id]
-	key_name		= "web_server_key"
+	key_name		= "jenkins_server_key"
 
 	tags = {
 		Name = "web_server_instance"
