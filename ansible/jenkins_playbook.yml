@@ -1,0 +1,72 @@
+
+- name: Jenkins Playbook
+  gather_facts: false
+  hosts: all
+  become: true
+  vars:
+          ssh_user: ubuntu
+          access_key: "{{ hostvars[jenkins]['aws_access_key'] }}"
+          secret_key: "{{ hostvars[jenkins]['aws_secret_access_key'] }}"
+  tasks:
+          - name: Update apt cache
+            apt:
+                    update_cache: yes
+                    cache_valid_time: 3600
+
+          - name: Install AWS CLI
+            apt:
+                    name: awscli
+                    state: present
+          
+          - name: Install Java
+            apt:
+                    name: openjdk-8-jdk
+                    state: present
+   
+          - name: Add Jenkins APT Key
+            apt_key:
+                    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+                    state: present
+   
+          - name: Add Jenkins APT Repository
+            apt_repository:
+                   repo: deb https://pkg.jenkins.io/debian-stable binary/
+                   state: present
+  
+          - name: Install Jenkins
+            apt:
+                   name: jenkins
+                   state: present
+
+          - name: Start Jenkins service
+            service:
+                    name: jenkins
+                    state: started
+
+          - name: Check ssh-key
+            stat:
+                    path: /home/ubuntu/.ssh/id_rsa
+            register: ssh_exist
+
+          - name: Create and upload ssh public key
+            shell: |
+                ssh-keygen -q -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
+                chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa
+                chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa.pub
+            when: ssh_exist.stat.exists == False
+          
+          - name: Upload public key
+            s3:
+                    access_key: "{{access_key}}"
+                    secret_key: "{{secret_key}}"
+                    bucket: sshbucket-0408
+                    object: public-key
+                    src: /home/ubuntu/.ssh/id_rsa.pub
+                    mode: put
+            register: s3_upload
+          
+          - name: Print S3 object URL
+            debug:
+                    var: s3_upload.object_url
+                        
+
