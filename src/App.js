@@ -17,6 +17,7 @@ function App() {
         >
           Learn React
         </a>
+        <div>자동빌드 확인</div>
       </header>
     </div>
   );
