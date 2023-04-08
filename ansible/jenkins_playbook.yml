@@ -32,7 +32,11 @@
             apt_repository:
                    repo: deb https://pkg.jenkins.io/debian-stable binary/
                    state: present
-  
+          
+          - name: add ansible repo
+            apt_repository:
+                    repo: ppa:ansible/ansible
+
           - name: Install Jenkins
             apt:
                    name: jenkins
@@ -42,6 +46,10 @@
             service:
                     name: jenkins
                     state: started
+
+          - name: install ansible
+            apt:
+                    name: ['software-properties-common', 'ansible']
 
           - name: Check ssh-key
             stat:
