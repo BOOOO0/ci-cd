@@ -1,7 +1,0 @@
-- name: Test Connection
-  hosts: all
-  gather_facts: False
-  become: yes
-  tasks:
-  - name: Ping
-    ping:
