@@ -1,0 +1,23 @@
+
+- name: Deply Web Server Playbook
+  hosts: all
+  become: true
+  tasks:
+          - name: "Download artifact"
+            shell:
+                    cmd: 'aws s3 cp s3://sshbucket-0408/artifact/{{ file_name }} /var/www/build.tar.gz'
+          
+          - name: "Wait until the download finish"
+            wait_for:
+                    path: /var/www/build.tar.gz
+
+          - name: "unarchive package"
+            unarchive:
+                    src: /var/www/build.tar.gz
+                    dest: /var/www
+                    remote_src: yes
+
+          - name: "move unarchived package and delete unnecessary files"
+            shell: |
+                mv /var/www/build /var/www/html
+                rm /var/www/build.tar.gz
