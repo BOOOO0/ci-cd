@@ -24,10 +24,17 @@
                      state: started
                      name: nginx
            
+           - name: "Check SSH key"
+             stat:
+                     path: /home/ubuntu/jenkins_key/jenkins.pub
+             register: ssh_exist          
+
            - name: "Download Jenkins server SSH public key"
              shell:
-                     cmd: aws s3 cp s3://sshbucket-0408/key/id_rsa.pub /home/ubuntu/jenkins_key/id_rsa.pub
+                     cmd: aws s3 cp s3://sshbucket-0408/key/id_rsa.pub /home/ubuntu/jenkins_key/jenkins.pub
+             when: not ssh_exist.stat.exists
 
            - name: "Add Jenkins server key to Auth key"
              shell:
-                     cmd: cat /home/ubuntu/jenkins_key/id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys 
+                     cmd: cat /home/ubuntu/jenkins_key/jenkins.pub >> /home/ubuntu/.ssh/authorized_keys 
+             when: not ssh_exist.stat.exists
