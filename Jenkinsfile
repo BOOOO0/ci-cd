@@ -24,6 +24,7 @@ pipeline {
 	        }
 	    }
 	}
+    }
         stage("Deploy") {
             steps {
                 sh '''
@@ -31,6 +32,6 @@ pipeline {
                 '''
             }
         }
-    }
 }
+
 
