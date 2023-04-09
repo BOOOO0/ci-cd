@@ -53,14 +53,14 @@
 
           - name: Check ssh-key
             stat:
-                    path: /home/ubuntu/.ssh/id_rsa
+                    path: /var/lib/jenkins/.ssh/id_rsa
             register: ssh_exist
 
           - name: Create and upload ssh public key
             shell: |
-                ssh-keygen -q -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
-                chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa
-                chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa.pub
+                ssh-keygen -q -t rsa -N "" -f /var/lib/jenkins/.ssh/id_rsa
+                chown jenkins:jenkins /var/lib/jenkins/.ssh/id_rsa
+                chown jenkins:jenkins /var/lib/jenkins/.ssh/id_rsa.pub
             when: ssh_exist.stat.exists == False
           
           - name: Upload public key
