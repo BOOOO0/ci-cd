@@ -18,19 +18,13 @@ pipeline {
                     sh 'tar -zcf ${JOB_NAME}${BUILD_NUMBER}.tar.gz ./build/*'
 		}
             }
-	    post {
- 		 success {
-        	    withAWS(credentials: 'aws-credentials') {
-           	    	def s3 = s3UploadFile(
-                	    file: "./${JOB_NAME}${BUILD_NUMBER}.tar.gz",
-                	    bucket: "sshbucket-0408",
-                	    path: "s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz"
-            		)
-            		println "Artifact uploaded to S3: s3://${s3.bucket}/${s3.path}"
-        	    }
-    		}
+	    post{
+		success{
+			sh 'aws s3 cp ./build/${JOB_NAME}${BUILD_NUMBER}.tar.gz s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz'
+			sh 'aws s3 cp ./${JOB_NAME}${BUILD_NUMBER}.tar.gz s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz'
+	        }
 	    }
-        }
+	}
         stage("Deploy") {
             steps {
                 sh '''
