@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+    	AWS_DEFAULT_REGION = "ap-northeast-2"
+    }
     stages {
 	stage("Checkout Repo") {
             steps {
@@ -15,10 +18,17 @@ pipeline {
                     sh 'tar -zcf ${JOB_NAME}${BUILD_NUMBER}.tar.gz ./build/*'
 		}
             }
-	    post{
-		success{
-			sh 'aws s3 cp ./${JOB_NAME}${BUILD_NUMBER}.tar.gz s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz'
-	        }
+	    post {
+ 		 success {
+        	    withAWS(credentials: 'aws-credentials') {
+           	    	def s3 = s3UploadFile(
+                	    file: "./${JOB_NAME}${BUILD_NUMBER}.tar.gz",
+                	    bucket: "sshbucket-0408",
+                	    path: "s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz"
+            		)
+            		println "Artifact uploaded to S3: s3://${s3.bucket}/${s3.path}"
+        	    }
+    		}
 	    }
         }
         stage("Deploy") {
