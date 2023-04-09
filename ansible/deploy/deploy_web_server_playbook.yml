@@ -19,5 +19,6 @@
 
           - name: "move unarchived package and delete unnecessary files"
             shell: |
+                rm -rf /var/www/html
                 mv /var/www/build /var/www/html
                 rm /var/www/build.tar.gz
