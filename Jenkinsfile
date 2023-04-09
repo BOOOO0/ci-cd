@@ -27,11 +27,9 @@ pipeline {
     	stage("Deploy") {
             steps {
                 sh '''
-ansible-playbook -i ./ansible/deploy/web.ini ./ansible/deploy/deploy_web_server_playbook.yml --extra-vars "file_name='${JOB_NAME}${BUILD_NUMBER}.tar.gz"'
+ansible-playbook -i ./ansible/deploy/web.ini ./ansible/deploy/deploy_web_server_playbook.yml "file_name='${JOB_NAME}${BUILD_NUMBER}.tar.gz'"
 		'''
             }
         }
     }
 }
-
-
