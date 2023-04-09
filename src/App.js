@@ -17,7 +17,7 @@ function App() {
         >
           Learn React
         </a>
-        <div>자동빌드 확인</div>
+        <div>자동빌드 push로 한번 더  확인</div>
       </header>
     </div>
   );
