@@ -17,7 +17,7 @@ pipeline {
             }
 	    post{
 		success{
-			sh 'aws s3 cp ./build/${JOB_NAME}${BUILD_NUMBER}.tar.gz s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz'
+			sh 'aws s3 cp ./${JOB_NAME}${BUILD_NUMBER}.tar.gz s3://sshbucket-0408/artifact/${JOB_NAME}${BUILD_NUMBER}.tar.gz'
 	        }
 	    }
         }
