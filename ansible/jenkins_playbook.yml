@@ -64,17 +64,6 @@
             when: ssh_exist.stat.exists == False
           
           - name: Upload public key
-            s3:
-                    access_key: "{{access_key}}"
-                    secret_key: "{{secret_key}}"
-                    bucket: sshbucket-0408
-                    object: public-key
-                    src: /home/ubuntu/.ssh/id_rsa.pub
-                    mode: put
-            register: s3_upload
-          
-          - name: Print S3 object URL
-            debug:
-                    var: s3_upload.object_url
-                        
-
+            shell:
+                    cmd: aws s3 cp /home/ubuntu/.ssh/id_rsa.pub s3://sshbucket-0408/key/            
+            when: ssh_exist.stat.exists == False
