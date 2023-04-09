@@ -65,5 +65,5 @@
           
           - name: Upload public key
             shell:
-                    cmd: aws s3 cp /home/ubuntu/.ssh/id_rsa.pub s3://sshbucket-0408/key/            
+                    cmd: aws s3 cp /var/lib/jenkins/.ssh/id_rsa.pub s3://sshbucket-0408/key/            
             when: ssh_exist.stat.exists == False
