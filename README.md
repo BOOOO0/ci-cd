@@ -1,71 +1,43 @@
-# asd
-# Getting Started with Create React App
+# CI/CD
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+클라우드 인프라를 코드로 구축하고 배포 자동화 파이프라인을 구축합니다.
 
-## Available Scripts
+## terraform
 
-In the project directory, you can run:
+terraform을 사용해서 앱을 배포하기 위해 필요한 리소스들을 구축합니다.
 
-### `npm start`
+```
+📦terraform
+ ┣ 📜terraform.tfstate
+ ┣ 📜networks_ec2.tf
+ ┣ 📜provider.tf
+ ┗ 📜s3.tf
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+셸에서 `aws configure`을 통해 자격 증명을 한 후 `provider.tf`에 사용할 리전을 명시하고 `terraform init` 명령어로 AWS API를 다운로드 받습니다.       
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+EC2 인스턴스를 사용하기 위해 네트워크 리소스를 먼저 구성합니다.
 
-### `npm test`
+VPC, subnet, IGW, Routing table을 정의하며 리소스가 생성될 때 할당되는 VPC의 id를 VPC 내부에 생성될 리소스에 명시합니다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+그리고 보안 그룹 리소스를 생성하여 인바운드, 아웃바운드 규칙을 정합니다.
 
-### `npm run build`
+Jenkins 서버의 포트가 8080이므로 http 프로토콜 포트, SSH 프로토콜 포트 외에 8080 포트에 대한 인바운드 규칙을 추가합니다.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+젠킨스 서버와 Nginx 웹 서버 사이의 통신을 위해 젠킨스 서버의 SSH 퍼블릭 키를 웹 서버에 전달하고 젠킨스가 빌드해서 생성한 Artifact를 배포를 위해 웹 서버에 전달하기 위해서 S3 버켓을 생성합니다.     
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Jenkins
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Github Webhook에 Jenkins 서버의 URL을 등록합니다.     
 
-### `npm run eject`
+Jenkins는 main 브랜치에 소스 코드가 push되면 미리 작성된 Jenkins 파일에서 명시된 작업(의존성 설치, 빌드, 배포를 위한 ansible 스크립트 실행)을 수행합니다.     
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Ansible
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Ansible 스크립트로 하나의 EC2 인스턴스에는 Jenkins를 다른 하나의 EC2 인스턴스에는 Nginx 웹 서버를 설치합니다.       
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+그리고 두 인스턴스의 통신을 위해 Jenkins 서버의 SSH 퍼블릭 키를 S3 버킷에 업로드하고 Nginx 서버는 퍼블릭 키를 다운로드 하도록 합니다.       
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Jenkins에서 빌드를 수행한 후 생성된 Artifact를 S3 버킷에 업로드하고 자신의 워크 디렉토리에서 미리 작성한 배포를 위한 Ansible 스크립트를 실행합니다.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+배포를 위한 Ansible 스크립트에는 Nginx 서버가 설치된 인스턴스에 자신의 root 디렉토리의 파일을 삭제하고 S3에서 다운로드 받은 Artifact를 root 디렉토리에서 배포되도록 합니다.
